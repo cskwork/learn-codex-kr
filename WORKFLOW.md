@@ -216,14 +216,10 @@ agent:
   # `symphony/<ID>` feature branch into this target before setting Done.
   # The post-Done auto-merge remains a best-effort fallback for older prompts.
   auto_merge_on_done: true
-  # Branch/ref used as the start point for new `symphony/<ID>` feature
-  # branches. Empty string = current host branch. The board viewer can
-  # update this from its real git branch dropdown.
-  feature_base_branch: ""
-  # Branch to merge into. Empty string = use the branch the feature branch
-  # was created from/current host branch (most flexible). The board viewer
-  # can update this from its real git branch dropdown.
-  auto_merge_target_branch: ""
+  # learn-codex-kr 룰: dev에서 분기, dev로 머지. main은 ship 시점에만 사용자가 직접
+  # dev를 머지 후 push. 자세한 배경은 사용자 메모리(feedback_always_commit_dev_then_merge_main).
+  feature_base_branch: "dev"
+  auto_merge_target_branch: "dev"
   # Workspace-only roots that must not differ on the ticket branch. File-board
   # workflows symlink `kanban/` from host, so changes there shouldn't bring
   # the merge to a halt — exclude it.
