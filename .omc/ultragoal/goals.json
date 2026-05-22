@@ -1,7 +1,7 @@
 {
   "version": 1,
   "createdAt": "2026-05-20T10:58:44.718Z",
-  "updatedAt": "2026-05-20T10:58:44.718Z",
+  "updatedAt": "2026-05-22T15:00:06.098Z",
   "briefPath": ".omc/ultragoal/brief.md",
   "goalsPath": ".omc/ultragoal/goals.json",
   "ledgerPath": ".omc/ultragoal/ledger.jsonl",
@@ -11,100 +11,102 @@
       "id": "G001-bootstrap",
       "title": "Bootstrap",
       "objective": "Create separate GitHub repo, scaffold Next.js 15 + Tailwind v4 + TypeScript, push and deploy hello-world to Vercel; document setup in README",
-      "status": "pending",
-      "attempt": 0,
+      "status": "done",
+      "attempt": 1,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z"
     },
     {
       "id": "G002-korean-landing",
       "title": "Korean landing",
       "objective": "Mobile-first Korean landing page (hero, value prop, 3-step preview of single-player lesson, CTA) — no signup required; verify on mobile viewport",
-      "status": "pending",
-      "attempt": 0,
+      "status": "done",
+      "attempt": 1,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z"
     },
     {
       "id": "G003-single-player-lesson-1",
       "title": "Single-player lesson 1",
       "objective": "Build first interactive Codex CLI lesson in Korean (key-input simulation, instant feedback, completion screen); track lesson completion locally",
-      "status": "pending",
-      "attempt": 0,
+      "status": "done",
+      "attempt": 1,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z"
     },
     {
       "id": "G004-lesson-library",
       "title": "Lesson library",
       "objective": "Add 4 more single-player Codex lessons (/goal, /plan, /verify, real-world workflow) plus library index page in Korean; mobile UX verified",
-      "status": "pending",
-      "attempt": 0,
+      "status": "done",
+      "attempt": 1,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z"
     },
     {
       "id": "G005-auth-persistence",
       "title": "Auth + persistence",
       "objective": "Wire Supabase Auth (anonymous + magic-link upgrade) and Postgres for lesson progress; migrate local state to server; preserve mobile UX",
-      "status": "pending",
-      "attempt": 0,
+      "status": "done",
+      "attempt": 1,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z"
     },
     {
       "id": "G006-realtime-presence",
       "title": "Realtime presence",
       "objective": "Show concurrent learners count using Supabase Realtime; '지금 N명 학습 중' on landing and lesson screens",
-      "status": "pending",
-      "attempt": 0,
+      "status": "done",
+      "attempt": 1,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z"
     },
     {
       "id": "G007-multiplayer-co-op",
       "title": "Multiplayer co-op",
       "objective": "Implement 2-player co-op Codex challenge (room creation, invite link, shared puzzle state, in-room chat); first co-op puzzle shipped",
-      "status": "pending",
-      "attempt": 0,
+      "status": "done",
+      "attempt": 1,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z"
     },
     {
       "id": "G008-multiplayer-race",
       "title": "Multiplayer race",
       "objective": "Public lobby + matchmaking + race mode (fastest correct Codex prompt wins); 1 race puzzle + result screen with share button",
-      "status": "pending",
-      "attempt": 0,
+      "status": "done",
+      "attempt": 1,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z"
     },
     {
       "id": "G009-leaderboard-retention",
       "title": "Leaderboard + retention",
       "objective": "Daily challenge, streak counter, share-to-social buttons, weekly leaderboard; analytics wired",
-      "status": "pending",
-      "attempt": 0,
+      "status": "done",
+      "attempt": 1,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z"
     },
     {
       "id": "G010-reddit-launch-feedback-iteration",
       "title": "Reddit launch + feedback iteration",
       "objective": "Soft-launch to r/Korea r/programming r/learnprogramming r/OpenAI; collect feedback; ship at least one round of issue fixes and content additions",
-      "status": "pending",
+      "status": "manual",
       "attempt": 0,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z",
+      "note": "Code-side complete; awaits human action — see LAUNCH.md"
     },
     {
       "id": "G011-concurrency-push-to-100-ccu",
       "title": "Concurrency push to 100 CCU",
       "objective": "Promote, add content, harden infra, run targeted Reddit/SNS pushes until 100 concurrent users (5-min sustained) is reached and recorded",
-      "status": "pending",
+      "status": "manual",
       "attempt": 0,
       "createdAt": "2026-05-20T10:58:44.718Z",
-      "updatedAt": "2026-05-20T10:58:44.718Z"
+      "updatedAt": "2026-05-22T15:00:06.098Z",
+      "note": "Code-side complete; awaits human action — see LAUNCH.md"
     }
   ],
   "claudeObjective": "Complete all ultragoal stories in .omc/ultragoal/goals.json: G001-bootstrap Bootstrap; G002-korean-landing Korean landing; G003-single-player-lesson-1 Single-player lesson 1; G004-lesson-library Lesson library; G005-auth-persistence Auth + persistence; G006-realtime-presence Realtime presence; G007-multiplayer-co-op Multiplayer co-op; G008-multiplayer-race Multiplayer race; G009-leaderboard-retention Leaderboard + retention; G010-reddit-launch-feedback-iteration Reddit launch + feedback iteration; G011-concurrency-push-to-100-ccu Concurrency push to 100 CCU"
