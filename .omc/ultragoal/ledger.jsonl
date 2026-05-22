@@ -1,1 +1,13 @@
 {"ts":"2026-05-20T10:58:44.718Z","event":"plan_created","message":"11 goal(s) created"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"session_start","message":"claude-opus-4-7 implementation session"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"goal_complete","goalId":"G001-bootstrap","message":"next.js 16 + tailwind v4 + ts scaffold; gh pages workflow"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"goal_complete","goalId":"G002-korean-landing","message":"mobile-first ko landing with hero, value prop, route cards"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"goal_complete","goalId":"G003-single-player-lesson-1","message":"interactive LessonSimulator with 5 step kinds + localstorage progress"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"goal_complete","goalId":"G004-lesson-library","message":"5 lessons total (intro/goal/plan/verify/real-world) + library index"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"goal_complete","goalId":"G005-auth-persistence","message":"anon device-id + supabase progress sync; works without supabase via localstorage"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"goal_complete","goalId":"G006-realtime-presence","message":"PresenceBadge wired to lck:global supabase realtime channel; estimate fallback"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"goal_complete","goalId":"G007-multiplayer-co-op","message":"5-char room codes, supabase presence + broadcast, chat, 2 coop challenges"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"goal_complete","goalId":"G008-multiplayer-race","message":"1-min match slots, presence-based race tracking, 3 race challenges, score sync"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"goal_complete","goalId":"G009-leaderboard-retention","message":"weekly_leaderboard view + daily challenge (kst) + streak counter + share button"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"checkpoint","goalId":"G010-reddit-launch-feedback-iteration","message":"code-side complete; LAUNCH.md playbook written; human action required"}
+{"ts":"2026-05-22T15:00:17.244Z","event":"checkpoint","goalId":"G011-concurrency-push-to-100-ccu","message":"infra ready, supabase free tier sized for 100 ccu; runbook in LAUNCH.md"}
