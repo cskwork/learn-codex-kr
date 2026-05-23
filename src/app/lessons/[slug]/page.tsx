@@ -17,7 +17,7 @@ export async function generateMetadata({
   const lesson = getLesson(slug);
   if (!lesson) return {};
   return {
-    title: `${lesson.title} · learn-codex-kr`,
+    title: `${lesson.title} · codex-tutorial`,
     description: lesson.subtitle,
   };
 }

@@ -1,7 +1,7 @@
 import DailyChallenge from "./DailyChallenge";
 
 export const metadata = {
-  title: "오늘의 챌린지 · learn-codex-kr",
+  title: "오늘의 챌린지 · codex-tutorial",
   description: "매일 새로 열리는 5분짜리 Codex 챌린지. 스트릭을 이어 가세요.",
 };
 

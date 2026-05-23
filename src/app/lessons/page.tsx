@@ -3,7 +3,7 @@ import { allLessons } from "@/lib/lessons";
 import LessonsLibrary from "./LessonsLibrary";
 
 export const metadata = {
-  title: "레슨 라이브러리 · learn-codex-kr",
+  title: "레슨 라이브러리 · codex-tutorial",
   description:
     "Codex CLI 핵심 워크플로를 5–10분 단위 한국어 레슨으로 익혀요.",
 };
