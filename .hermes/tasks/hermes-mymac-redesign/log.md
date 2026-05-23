@@ -1,0 +1,4 @@
+- 2026-05-23 17:15:27 KST: Created durable redesign task state.
+- 2026-05-23 KST: Rebuilt homepage around codex-tutorial positioning, premium dark visual system, concrete first-lesson outcome, mini demo, route cards, and trust chips.
+- 2026-05-23 KST: Updated visible brand strings, metadata, share title, and package name to codex-tutorial/codex-tutorial while keeping GitHub Pages basePath /learn-codex-kr for safety.
+- 2026-05-23 KST: Ran pnpm lint and pnpm build successfully; local browser console clean.

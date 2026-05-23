@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import RaceMode from "./RaceMode";
 
 export const metadata = {
-  title: "레이스 모드 · learn-codex-kr",
+  title: "레이스 모드 · codex-tutorial",
   description: "공개 로비에서 가장 빠른 프롬프트로 챌린지 정답까지.",
 };
 

@@ -1,7 +1,7 @@
 import Leaderboard from "./Leaderboard";
 
 export const metadata = {
-  title: "주간 리더보드 · learn-codex-kr",
+  title: "주간 리더보드 · codex-tutorial",
   description: "이번 주 가장 빠른 학습자들.",
 };
 
