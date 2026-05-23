@@ -313,7 +313,7 @@ function RaceResult({ timeMs, text }: { timeMs: number; text: string }) {
     <section className="flex flex-col items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-6 text-center">
       <h3 className="text-lg font-bold text-emerald-200">{text}</h3>
       <p className="font-mono text-3xl text-emerald-100">{(timeMs / 1000).toFixed(2)}s</p>
-      <ShareButton text={`learn-codex-kr 레이스에서 ${(timeMs / 1000).toFixed(2)}초!`} />
+      <ShareButton text={`codex-tutorial 레이스에서 ${(timeMs / 1000).toFixed(2)}초!`} />
     </section>
   );
 }

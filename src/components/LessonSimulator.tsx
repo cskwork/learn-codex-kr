@@ -278,7 +278,7 @@ function CompletionScreen({ lesson }: { lesson: Lesson }) {
           다른 레슨 보기
         </Link>
         <ShareButton
-          text={`learn-codex-kr 에서 '${lesson.title}' 레슨을 끝냈어요!`}
+          text={`codex-tutorial 에서 '${lesson.title}' 레슨을 끝냈어요!`}
           className="rounded-full border border-zinc-700 px-5 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800"
         />
       </div>

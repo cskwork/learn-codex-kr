@@ -142,7 +142,7 @@ function DoneScreen({ state, note }: { state: DailyState; note: string }) {
       <p className="text-xs text-zinc-300">
         스트릭 <strong>{streak.current}</strong>일 · 내일 다시 오세요
       </p>
-      <ShareButton text={`learn-codex-kr 오늘의 챌린지를 ${(state.timeMs / 1000).toFixed(2)}초에 완료! 스트릭 ${streak.current}일째.`} />
+      <ShareButton text={`codex-tutorial 오늘의 챌린지를 ${(state.timeMs / 1000).toFixed(2)}초에 완료! 스트릭 ${streak.current}일째.`} />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import CoopRoom from "./CoopRoom";
 
 export const metadata = {
-  title: "코업 모드 · learn-codex-kr",
+  title: "코업 모드 · codex-tutorial",
   description: "친구 1명과 같은 Codex 챌린지를 함께 해결.",
 };
 

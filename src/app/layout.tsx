@@ -14,22 +14,37 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "learn-codex-kr · Codex CLI 한국어 인터랙티브 학습",
+  metadataBase: new URL("https://cskwork.github.io/learn-codex-kr/"),
+  title: {
+    default: "codex-tutorial · Codex CLI 한국어 훈련장",
+    template: "%s · codex-tutorial",
+  },
   description:
-    "OpenAI Codex CLI를 한국어로 인터랙티브하게 배우는 멀티플레이어 학습 사이트. 회원가입 없이 5분에 시작.",
+    "내 Mac을 AI 코딩 작업장으로 만드는 한국어 Codex CLI 인터랙티브 학습 사이트. 회원가입 없이 5분에 시작.",
+  applicationName: "codex-tutorial",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "learn-codex-kr · Codex CLI 한국어 인터랙티브 학습",
+    title: "codex-tutorial · Codex CLI 한국어 훈련장",
     description:
-      "OpenAI Codex CLI를 한국어로 인터랙티브하게 배우는 멀티플레이어 학습 사이트.",
+      "좋은 지시, 작업 분해, 검증 루프를 짧은 실습과 챌린지로 익히는 한국어 Codex CLI 학습 제품.",
+    url: "/",
+    siteName: "codex-tutorial",
     locale: "ko_KR",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "codex-tutorial · Codex CLI 한국어 훈련장",
+    description: "회원가입 없이 5분에 시작하는 한국어 Codex CLI 인터랙티브 학습.",
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#09090b",
+  themeColor: "#050607",
   viewportFit: "cover",
 };
 
@@ -43,14 +58,14 @@ export default function RootLayout({
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-zinc-950 text-zinc-100">
+      <body className="flex min-h-full flex-col bg-[#050607] text-zinc-100">
         <Header />
         <main className="flex-1">{children}</main>
-        <footer className="mx-auto w-full max-w-3xl px-4 py-6 text-center text-[11px] text-zinc-600 sm:px-6">
-          MIT · {" "}
+        <footer className="mx-auto w-full max-w-6xl px-4 py-8 text-center text-[11px] text-zinc-600 sm:px-6">
+          codex-tutorial · MIT · {" "}
           <a
             href="https://github.com/cskwork/learn-codex-kr"
-            className="underline hover:text-zinc-400"
+            className="underline underline-offset-4 hover:text-zinc-300"
           >
             GitHub
           </a>
