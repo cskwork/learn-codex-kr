@@ -1,33 +1,56 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Lesson, LessonStep } from "@/lib/lessons";
 import { markLessonComplete } from "@/lib/storage";
 import ShareButton from "./ShareButton";
+import {
+  AnswerField,
+  Icon,
+  Oval,
+  RichText,
+  SheetBand,
+  TimingTrack,
+  Verdict,
+  backLink,
+  btnPrimary,
+  btnSecondary,
+} from "./omr";
 
-type Props = { lesson: Lesson; onComplete?: (durationSec: number) => void };
+type NextLesson = { slug: string; title: string } | null;
+type Props = { lesson: Lesson; nextLesson?: NextLesson; onComplete?: (durationSec: number) => void };
 
-export default function LessonSimulator({ lesson, onComplete }: Props) {
+export default function LessonSimulator({ lesson, nextLesson = null, onComplete }: Props) {
   const [stepIdx, setStepIdx] = useState(0);
   const [input, setInput] = useState("");
   const [feedback, setFeedback] = useState<null | { ok: boolean; msg: string }>(null);
   const [selected, setSelected] = useState<number | null>(null);
+  const [wrongPicks, setWrongPicks] = useState<number[]>([]);
   const [done, setDone] = useState(false);
   const startedAt = useRef<number>(Date.now());
   const inputRef = useRef<HTMLInputElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const firstRender = useRef(true);
 
   const step: LessonStep | undefined = lesson.steps[stepIdx];
   const total = lesson.steps.length;
   const isLast = stepIdx === total - 1;
-  const progressPct = useMemo(() => Math.round(((stepIdx + 1) / total) * 100), [stepIdx, total]);
 
   useEffect(() => {
     setInput("");
     setFeedback(null);
     setSelected(null);
+    setWrongPicks([]);
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    // Move focus with the step so keyboard and screen-reader users land on the new question.
     if (step?.kind === "prompt") {
       window.setTimeout(() => inputRef.current?.focus(), 50);
+    } else {
+      headingRef.current?.focus();
     }
   }, [stepIdx, step?.kind]);
 
@@ -45,153 +68,170 @@ export default function LessonSimulator({ lesson, onComplete }: Props) {
     const durationSec = Math.round((Date.now() - startedAt.current) / 1000);
     markLessonComplete(lesson.slug, durationSec);
     onComplete?.(durationSec);
+    window.scrollTo({ top: 0 });
   }
 
   function handleSubmitPrompt(e: React.FormEvent) {
     e.preventDefault();
     if (step?.kind !== "prompt") return;
     const value = input.trim();
-    const matched = step.expected.some((src) => new RegExp(src, "i").test(value));
-    if (matched) {
-      setFeedback({ ok: true, msg: step.success });
-    } else {
-      setFeedback({ ok: false, msg: step.hint });
+    if (!value) {
+      setFeedback({ ok: false, msg: "먼저 답란에 명령을 입력하세요." });
+      return;
     }
+    const matched = step.expected.some((src) => new RegExp(src, "i").test(value));
+    setFeedback(matched ? { ok: true, msg: step.success } : { ok: false, msg: step.hint });
   }
 
   function handleChoiceClick(idx: number) {
     if (step?.kind !== "choice") return;
     setSelected(idx);
     const opt = step.options[idx];
-    setFeedback({
-      ok: opt.correct,
-      msg: opt.explain,
-    });
+    if (!opt.correct) setWrongPicks((w) => (w.includes(idx) ? w : [...w, idx]));
+    setFeedback({ ok: opt.correct, msg: opt.explain });
   }
 
   if (!step) return null;
 
+  const solved = feedback?.ok === true;
+  const headingCls = "font-serif text-[1.45rem] font-extrabold leading-snug text-marker outline-none sm:text-[1.7rem]";
+
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 pb-24 pt-6 sm:px-6">
-      <header className="flex flex-col gap-2">
-        <Link href="/lessons" className="text-xs text-zinc-500 hover:text-zinc-300">
-          ← 레슨 라이브러리
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pb-24 pt-6 sm:px-6">
+      <header className="flex flex-col gap-3">
+        <Link href="/lessons" className={backLink}>
+          <Icon name="back" size={15} />
+          레슨 라이브러리
         </Link>
-        <h1 className="text-xl font-bold tracking-tight text-zinc-100 sm:text-2xl">
+        <SheetBand left={`문항 ${String(lesson.order).padStart(2, "0")}`} right={`예상 ${lesson.estMinutes}분`} />
+        <h1 className="font-serif text-[1.9rem] font-extrabold leading-tight tracking-[-0.02em] text-marker sm:text-[2.4rem]">
           {lesson.title}
         </h1>
-        <p className="text-sm text-zinc-400">{lesson.subtitle}</p>
-        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-zinc-900">
-          <div
-            className="h-full rounded-full bg-emerald-500 transition-all"
-            style={{ width: `${progressPct}%` }}
-          />
+        <p className="text-[0.95rem] text-text-2">{lesson.subtitle}</p>
+        <div
+          role="progressbar"
+          aria-label="레슨 진행"
+          aria-valuemin={1}
+          aria-valuemax={total}
+          aria-valuenow={done ? total : stepIdx + 1}
+          aria-valuetext={done ? "완료" : `${total}단계 중 ${stepIdx + 1}단계`}
+          className="flex items-center gap-3"
+        >
+          <TimingTrack total={total} done={done ? total : stepIdx} current={done ? undefined : stepIdx} className="flex-1" />
+          <span className="font-mono text-[0.8rem] tabular-nums text-text-2">
+            {done ? total : stepIdx + 1} / {total}
+          </span>
         </div>
-        <p className="text-[11px] text-zinc-500">
-          {stepIdx + 1} / {total} · 예상 {lesson.estMinutes}분
-        </p>
       </header>
 
       {done ? (
-        <CompletionScreen lesson={lesson} />
+        <CompletionScreen lesson={lesson} nextLesson={nextLesson} />
       ) : (
-        <section className="flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+        <section
+          key={stepIdx}
+          className="flex flex-col gap-5 border-[1.5px] border-ink bg-paper p-5 sm:p-7"
+          aria-labelledby="step-title"
+        >
+          <p className="font-mono text-[0.78rem] font-bold text-ink-strong">
+            {step.kind === "intro" && "안내"}
+            {step.kind === "prompt" && "주관식"}
+            {step.kind === "choice" && "객관식"}
+            {step.kind === "terminal" && "보기"}
+            {step.kind === "summary" && "정리"}
+          </p>
+
           {step.kind === "intro" && (
             <>
-              <h2 className="text-base font-semibold text-zinc-100">{step.title}</h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-300">
-                {step.body}
+              <h2 id="step-title" ref={headingRef} tabIndex={-1} className={headingCls}>
+                {step.title}
+              </h2>
+              <p className="max-w-[40rem] whitespace-pre-line text-[1rem] leading-8 text-text">
+                <RichText text={step.body} />
               </p>
-              <button
-                onClick={nextStep}
-                className="mt-2 self-end rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400"
-              >
-                시작하기 →
+              <button onClick={nextStep} className={`${btnPrimary} self-end`}>
+                시작하기
+                <Icon name="arrow" />
               </button>
             </>
           )}
 
           {step.kind === "prompt" && (
             <>
-              <h2 className="text-base font-semibold text-zinc-100">{step.title}</h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-300">
-                {step.narration}
+              <h2 id="step-title" ref={headingRef} tabIndex={-1} className={headingCls}>
+                {step.title}
+              </h2>
+              <p className="max-w-[40rem] whitespace-pre-line text-[1rem] leading-8 text-text">
+                <RichText text={step.narration} />
               </p>
-              <form onSubmit={handleSubmitPrompt} className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-black/60 px-3 py-2 font-mono text-sm">
-                  <span className="text-emerald-400">$</span>
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    inputMode="text"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder={step.placeholder}
-                    className="flex-1 bg-transparent text-zinc-100 outline-none placeholder:text-zinc-600"
-                  />
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="submit"
-                    className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400"
-                  >
-                    실행
-                  </button>
-                  {feedback?.ok && (
-                    <button
-                      type="button"
-                      onClick={nextStep}
-                      className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:bg-zinc-800"
-                    >
-                      다음 →
+              <form onSubmit={handleSubmitPrompt} className="flex flex-col gap-3">
+                <AnswerField
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={step.placeholder}
+                  aria-label="명령 입력"
+                  readOnly={solved}
+                />
+                {feedback && <Verdict ok={feedback.ok}><RichText text={feedback.msg} /></Verdict>}
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  {solved ? (
+                    <button type="button" onClick={nextStep} className={btnPrimary}>
+                      {isLast ? "완료!" : "다음 문항"}
+                      <Icon name="arrow" />
+                    </button>
+                  ) : (
+                    <button type="submit" className={btnPrimary}>
+                      실행
                     </button>
                   )}
                 </div>
               </form>
-              {feedback && <FeedbackLine ok={feedback.ok} msg={feedback.msg} />}
             </>
           )}
 
           {step.kind === "choice" && (
             <>
-              <h2 className="text-base font-semibold text-zinc-100">{step.title}</h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-300">
-                {step.narration}
+              <h2 id="step-title" ref={headingRef} tabIndex={-1} className={headingCls}>
+                {step.title}
+              </h2>
+              <p className="max-w-[40rem] whitespace-pre-line text-[1rem] leading-8 text-text">
+                <RichText text={step.narration} />
               </p>
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col border-[1.5px] border-ink">
                 {step.options.map((opt, idx) => {
                   const picked = selected === idx;
                   const isCorrect = picked && opt.correct;
-                  const isWrong = picked && !opt.correct;
+                  const isWrong = wrongPicks.includes(idx);
                   return (
-                    <li key={idx}>
+                    <li key={idx} className="border-b border-ink-line last:border-b-0">
                       <button
                         onClick={() => handleChoiceClick(idx)}
-                        disabled={selected !== null && opt.correct}
-                        className={`w-full rounded-xl border px-4 py-3 text-left text-sm transition ${
+                        disabled={solved}
+                        aria-pressed={picked}
+                        className={`flex w-full items-center gap-4 px-4 py-3.5 text-left text-[0.95rem] leading-6 transition-colors disabled:cursor-default ${
                           isCorrect
-                            ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-100"
+                            ? "bg-paper font-bold text-marker"
                             : isWrong
-                              ? "border-red-500/60 bg-red-500/10 text-red-100"
-                              : "border-zinc-800 bg-zinc-950/60 text-zinc-200 hover:border-zinc-700"
+                              ? "bg-ink-tint/60 text-text-2"
+                              : "text-text enabled:hover:bg-ink-tint"
                         }`}
                       >
-                        {opt.label}
+                        <Oval size={24} filled={isCorrect} wrong={isWrong}>
+                          {idx + 1}
+                        </Oval>
+                        <span className="flex-1">{opt.label}</span>
+                        {isCorrect && <span className="sr-only">(정답)</span>}
+                        {isWrong && <span className="sr-only">(오답)</span>}
                       </button>
                     </li>
                   );
                 })}
               </ul>
-              {feedback && <FeedbackLine ok={feedback.ok} msg={feedback.msg} />}
-              {feedback?.ok && (
-                <button
-                  onClick={nextStep}
-                  className="self-end rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400"
-                >
-                  다음 →
+              {feedback && <Verdict ok={feedback.ok}>{feedback.msg}</Verdict>}
+              {solved && (
+                <button onClick={nextStep} className={`${btnPrimary} self-end`}>
+                  {isLast ? "완료!" : "다음 문항"}
+                  <Icon name="arrow" />
                 </button>
               )}
             </>
@@ -199,41 +239,48 @@ export default function LessonSimulator({ lesson, onComplete }: Props) {
 
           {step.kind === "terminal" && (
             <>
-              <h2 className="text-base font-semibold text-zinc-100">{step.title}</h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-300">
-                {step.narration}
+              <h2 id="step-title" ref={headingRef} tabIndex={-1} className={headingCls}>
+                {step.title}
+              </h2>
+              <p className="max-w-[40rem] whitespace-pre-line text-[1rem] leading-8 text-text">
+                <RichText text={step.narration} />
               </p>
-              <pre className="overflow-x-auto rounded-lg border border-zinc-800 bg-black/70 p-4 font-mono text-xs leading-relaxed text-zinc-200">
-                <span className="text-emerald-400">$ </span>
-                <span className="text-zinc-50">{step.command}</span>
-                {"\n"}
-                {step.output.join("\n")}
-              </pre>
-              <button
-                onClick={nextStep}
-                className="self-end rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400"
-              >
-                다음 →
+              <figure className="border-[1.5px] border-ink">
+                <figcaption className="border-b border-ink-line bg-ink-tint px-3 py-1 font-mono text-[0.72rem] font-bold text-ink-strong">
+                  &lt;보기&gt; 터미널 출력
+                </figcaption>
+                <pre className="overflow-x-auto bg-paper-2 p-4 font-mono text-[0.85rem] leading-relaxed text-marker">
+                  <span className="text-ink">$ </span>
+                  <span className="font-bold">{step.command}</span>
+                  {"\n"}
+                  {step.output.join("\n")}
+                </pre>
+              </figure>
+              <button onClick={nextStep} className={`${btnPrimary} self-end`}>
+                다음 문항
+                <Icon name="arrow" />
               </button>
             </>
           )}
 
           {step.kind === "summary" && (
             <>
-              <h2 className="text-base font-semibold text-zinc-100">{step.title}</h2>
-              <ul className="flex flex-col gap-2 text-sm text-zinc-300">
+              <h2 id="step-title" ref={headingRef} tabIndex={-1} className={headingCls}>
+                {step.title}
+              </h2>
+              <ul className="flex flex-col divide-y divide-ink-line border-y border-ink-line">
                 {step.bullets.map((b, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="text-emerald-400">✓</span>
-                    <span>{b}</span>
+                  <li key={i} className="flex gap-3 py-3 text-[0.98rem] leading-7 text-text">
+                    <Icon name="check" size={18} className="mt-1 text-ink" />
+                    <span>
+                      <RichText text={b} />
+                    </span>
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={nextStep}
-                className="mt-2 self-end rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400"
-              >
-                {isLast ? "완료!" : "다음 →"}
+              <button onClick={nextStep} className={`${btnPrimary} self-end`}>
+                {isLast ? "완료!" : "다음 문항"}
+                <Icon name="arrow" />
               </button>
             </>
           )}
@@ -243,44 +290,47 @@ export default function LessonSimulator({ lesson, onComplete }: Props) {
   );
 }
 
-function FeedbackLine({ ok, msg }: { ok: boolean; msg: string }) {
+function CompletionScreen({ lesson, nextLesson }: { lesson: Lesson; nextLesson: NextLesson }) {
   return (
-    <p
-      className={`rounded-lg border px-3 py-2 text-xs ${
-        ok
-          ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
-          : "border-amber-500/40 bg-amber-500/10 text-amber-200"
-      }`}
+    <section
+      className="flex flex-col gap-6 border-[1.5px] border-marker bg-paper p-6 sm:p-8"
+      aria-labelledby="done-title"
+      role="status"
     >
-      {ok ? "✓ " : "힌트 · "}
-      {msg}
-    </p>
-  );
-}
-
-function CompletionScreen({ lesson }: { lesson: Lesson }) {
-  return (
-    <section className="flex flex-col items-center gap-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-8 text-center">
-      <div className="grid h-14 w-14 place-items-center rounded-full bg-emerald-500/20 text-2xl">
-        ✓
+      <div className="flex items-center gap-4">
+        <span className="stamp-in inline-flex border-[2.5px] border-ink px-3 py-1 font-serif text-xl font-extrabold text-ink">
+          완료
+        </span>
+        <div>
+          <h2 id="done-title" className="font-serif text-2xl font-extrabold text-marker">
+            레슨 완료!
+          </h2>
+          <p className="mt-1 text-[0.92rem] text-text-2">
+            {lesson.title} — 진행도가 저장되었습니다.
+          </p>
+        </div>
       </div>
-      <div>
-        <h2 className="text-xl font-bold text-emerald-100">레슨 완료!</h2>
-        <p className="mt-1 text-sm text-zinc-300">
-          {lesson.title} — 진행도가 저장되었습니다.
-        </p>
+      <div className="flex gap-1.5" aria-hidden>
+        {lesson.steps.map((_, i) => (
+          <Oval key={i} size={20} filled />
+        ))}
       </div>
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <Link
-          href="/lessons"
-          className="rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400"
-        >
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        {nextLesson ? (
+          <Link href={`/lessons/${nextLesson.slug}`} className={btnPrimary}>
+            다음 레슨: {nextLesson.title}
+            <Icon name="arrow" />
+          </Link>
+        ) : (
+          <Link href="/daily" className={btnPrimary}>
+            마지막 레슨 완료 · 오늘의 챌린지 풀기
+            <Icon name="arrow" />
+          </Link>
+        )}
+        <Link href="/lessons" className={btnSecondary}>
           다른 레슨 보기
         </Link>
-        <ShareButton
-          text={`codex-tutorial 에서 '${lesson.title}' 레슨을 끝냈어요!`}
-          className="rounded-full border border-zinc-700 px-5 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800"
-        />
+        <ShareButton text={`codex-tutorial 에서 '${lesson.title}' 레슨을 끝냈어요!`} className={btnSecondary} />
       </div>
     </section>
   );

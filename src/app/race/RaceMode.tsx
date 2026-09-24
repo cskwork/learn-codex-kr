@@ -9,6 +9,7 @@ import { getDeviceId, getDisplayName } from "@/lib/device-id";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { recordRaceScore } from "@/lib/storage";
 import ShareButton from "@/components/ShareButton";
+import { AnswerField, Icon, SheetBand, Verdict, backLink, btnPrimary, btnSecondary } from "@/components/omr";
 
 type Racer = { id: string; name: string; finishedMs?: number };
 
@@ -44,35 +45,70 @@ export default function RaceMode() {
 function Lobby({ onJoin }: { onJoin: () => void }) {
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <Link href="/" className="text-xs text-zinc-500 hover:text-zinc-300">
-          ← 홈
+      <header className="flex flex-col gap-3">
+        <Link href="/" className={backLink}>
+          <Icon name="back" size={15} />홈
         </Link>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight">레이스 모드</h1>
-        <p className="mt-1 text-sm text-zinc-400">
+        <SheetBand left="4교시 · 경쟁" right="1분 단위 매치" />
+        <h1 className="font-serif text-[2.2rem] font-extrabold tracking-[-0.02em] text-marker sm:text-[2.7rem]">
+          레이스 모드
+        </h1>
+        <p className="text-[0.95rem] text-text-2">
           1분마다 새 매치가 열립니다. 같은 매치에 들어온 다른 학습자보다 빠르게 정답을 맞춰 보세요.
         </p>
       </header>
-      <section className="flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
-        <p className="text-sm text-zinc-300">
+      <section className="flex flex-col gap-4 border-[1.5px] border-ink bg-paper p-5 sm:p-7">
+        <p className="text-[0.95rem] leading-7 text-text">
           매치 슬롯은 1분 단위로 자동 생성됩니다. 입장 즉시 챌린지가 시작됩니다.
         </p>
-        <button
-          onClick={onJoin}
-          className="rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400"
-        >
-          지금 매치 참가 →
+        {!isSupabaseConfigured() && (
+          <Notice>실시간 서버 미연결 — 지금은 혼자 기록을 재는 모드로 진행되고, 기록은 이 기기에 저장됩니다.</Notice>
+        )}
+        <button onClick={onJoin} className={`${btnPrimary} self-start`}>
+          지금 매치 참가
+          <Icon name="arrow" />
         </button>
       </section>
-      <section className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5 text-xs text-zinc-400">
-        <h2 className="text-sm font-semibold text-zinc-100">규칙</h2>
-        <ul className="mt-2 list-disc pl-5">
-          <li>같은 매치 ID 안의 모든 참가자가 같은 챌린지를 받음</li>
-          <li>가장 먼저 정답을 맞춘 사람부터 1, 2, 3등</li>
-          <li>점수는 weekly_leaderboard 에 기록 (Supabase 연결 시)</li>
-        </ul>
+      <section className="border-[1.5px] border-ink">
+        <h2 className="border-b-[1.5px] border-ink bg-ink-tint px-4 py-2 text-[0.8rem] font-bold text-ink-strong">규칙</h2>
+        <ol className="divide-y divide-ink-line text-[0.92rem] text-text">
+          {[
+            "같은 매치 ID 안의 모든 참가자가 같은 챌린지를 받음",
+            "가장 먼저 정답을 맞춘 사람부터 1, 2, 3등",
+            "점수는 weekly_leaderboard 에 기록 (Supabase 연결 시)",
+          ].map((r, i) => (
+            <li key={r} className="grid grid-cols-[2rem_1fr] px-4 py-3">
+              <span className="font-mono font-bold text-ink">{i + 1}.</span>
+              {r}
+            </li>
+          ))}
+        </ol>
       </section>
     </div>
+  );
+}
+
+function Notice({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="flex items-start gap-2 border-[1.5px] border-pen bg-pen-tint px-3 py-2 text-[0.85rem] leading-6 text-pen">
+      <Icon name="info" size={16} className="mt-1" />
+      <span>{children}</span>
+    </p>
+  );
+}
+
+function MatchHeader({ matchId, sub }: { matchId: string; sub: React.ReactNode }) {
+  return (
+    <header className="flex flex-col gap-3">
+      <Link href="/race" className={backLink}>
+        <Icon name="back" size={15} />로비
+      </Link>
+      <SheetBand left="레이스 매치" right={matchId} />
+      <h1 className="font-serif text-[1.9rem] font-extrabold text-marker">
+        매치 <span className="font-mono text-ink">{matchId}</span>
+      </h1>
+      {sub}
+    </header>
   );
 }
 
@@ -104,18 +140,11 @@ function SoloRace({ matchId }: { matchId: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <header className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <Link href="/race" className="text-xs text-zinc-500 hover:text-zinc-300">
-            ← 로비
-          </Link>
-          <h1 className="mt-1 text-xl font-bold tracking-tight">
-            매치 <span className="font-mono text-emerald-300">{matchId}</span>
-          </h1>
-          <p className="text-xs text-amber-300">실시간 서버 미연결 — 개인 기록으로만 저장됩니다.</p>
-        </div>
-      </header>
+    <div className="flex flex-col gap-6">
+      <MatchHeader
+        matchId={matchId}
+        sub={<Notice>실시간 서버 미연결 — 개인 기록으로만 저장됩니다.</Notice>}
+      />
       <RaceQuestion
         challenge={challenge}
         answer={answer}
@@ -204,34 +233,29 @@ function RealRace({ matchId }: { matchId: string }) {
       : racers.filter((r) => (r.finishedMs ?? Infinity) <= done).length;
 
   return (
-    <div className="flex flex-col gap-5">
-      <header className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <Link href="/race" className="text-xs text-zinc-500 hover:text-zinc-300">
-            ← 로비
-          </Link>
-          <h1 className="mt-1 text-xl font-bold tracking-tight">
-            매치 <span className="font-mono text-emerald-300">{matchId}</span>
-          </h1>
-          <p className="text-xs text-zinc-500">{racers.length}명 참가 중</p>
-        </div>
-      </header>
+    <div className="flex flex-col gap-6">
+      <MatchHeader
+        matchId={matchId}
+        sub={<p className="font-mono text-[0.85rem] text-text-2">{racers.length}명 참가 중</p>}
+      />
 
-      <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">참가자</h3>
-        <ol className="mt-2 flex flex-col gap-1 text-sm">
+      <section className="border-[1.5px] border-ink">
+        <h2 className="border-b-[1.5px] border-ink bg-ink-tint px-4 py-2 text-[0.8rem] font-bold text-ink-strong">참가자</h2>
+        <ol className="divide-y divide-ink-line text-[0.92rem]">
+          {racers.length === 0 && <li className="px-4 py-3 text-text-2">접속 중...</li>}
           {racers.map((r, i) => (
             <li
               key={r.id}
-              className={`flex items-center justify-between rounded px-2 py-1 ${
-                r.id === me ? "bg-emerald-500/10 text-emerald-100" : "text-zinc-300"
+              className={`flex items-center justify-between px-4 py-2 ${
+                r.id === me ? "bg-paper-2 font-bold text-marker" : "text-text"
               }`}
             >
-              <span className="flex items-center gap-2">
-                <span className="w-5 text-right text-xs text-zinc-500">{i + 1}.</span>
+              <span className="flex items-center gap-3">
+                <span className="w-6 text-right font-mono text-[0.8rem] text-ink">{i + 1}.</span>
                 {r.name}
+                {r.id === me && <span className="text-[0.72rem] text-ink">(나)</span>}
               </span>
-              <span className="font-mono text-xs">
+              <span className="font-mono text-[0.85rem] tabular-nums">
                 {r.finishedMs !== undefined ? `${(r.finishedMs / 1000).toFixed(2)}s` : "..."}
               </span>
             </li>
@@ -274,33 +298,21 @@ function RaceQuestion({
   done: number | null;
 }) {
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
-      <h2 className="text-sm font-semibold text-emerald-400">챌린지</h2>
-      <p className="text-sm leading-relaxed text-zinc-100">{challenge.prompt}</p>
-      {hint && done === null && (
-        <p className="rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-amber-200">
-          힌트: {challenge.hint}
-        </p>
-      )}
-      <form onSubmit={onSubmit} className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-black/60 px-3 py-2 font-mono text-sm">
-          <span className="text-emerald-400">$</span>
-          <input
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            placeholder="명령 입력..."
-            disabled={done !== null}
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            className="flex-1 bg-transparent text-zinc-100 outline-none placeholder:text-zinc-600 disabled:opacity-50"
-          />
-        </div>
-        <button
-          type="submit"
+    <section className="flex flex-col gap-4 border-[1.5px] border-ink bg-paper p-5 sm:p-7" aria-labelledby="race-q">
+      <p className="font-mono text-[0.78rem] font-bold text-ink-strong">챌린지</p>
+      <h2 id="race-q" className="font-serif text-[1.3rem] font-extrabold leading-snug text-marker sm:text-[1.5rem]">
+        {challenge.prompt}
+      </h2>
+      <form onSubmit={onSubmit} className="flex flex-col gap-3">
+        <AnswerField
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          placeholder="명령 입력..."
+          aria-label="명령 입력"
           disabled={done !== null}
-          className="self-end rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-40"
-        >
+        />
+        {hint && done === null && <Verdict ok={false}>{challenge.hint}</Verdict>}
+        <button type="submit" disabled={done !== null} className={`${btnPrimary} self-end`}>
           실행
         </button>
       </form>
@@ -310,10 +322,20 @@ function RaceQuestion({
 
 function RaceResult({ timeMs, text }: { timeMs: number; text: string }) {
   return (
-    <section className="flex flex-col items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-6 text-center">
-      <h3 className="text-lg font-bold text-emerald-200">{text}</h3>
-      <p className="font-mono text-3xl text-emerald-100">{(timeMs / 1000).toFixed(2)}s</p>
-      <ShareButton text={`codex-tutorial 레이스에서 ${(timeMs / 1000).toFixed(2)}초!`} />
+    <section role="status" className="flex flex-col items-start gap-3 border-[1.5px] border-marker bg-paper p-6">
+      <span className="stamp-in inline-flex border-[2.5px] border-ink px-3 py-1 font-serif text-lg font-extrabold text-ink">
+        {text}
+      </span>
+      <p className="font-mono text-6xl font-bold tabular-nums tracking-tight text-marker sm:text-7xl">
+        {(timeMs / 1000).toFixed(2)}
+        <span className="ml-1 text-2xl text-ink">s</span>
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <ShareButton text={`codex-tutorial 레이스에서 ${(timeMs / 1000).toFixed(2)}초!`} />
+        <Link href="/leaderboard" className={btnSecondary}>
+          랭킹 보기
+        </Link>
+      </div>
     </section>
   );
 }
