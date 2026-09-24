@@ -5,15 +5,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getDailyChallenge, matchesChallenge } from "@/lib/challenges";
 import { getDeviceId, getDisplayName } from "@/lib/device-id";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
-import { getStreak } from "@/lib/storage";
+import { recordLearningDay } from "@/lib/storage";
+import { kstDay } from "@/lib/streak";
+import { useProgress } from "@/lib/useProgress";
 import StreakBadge from "@/components/StreakBadge";
 import ShareButton from "@/components/ShareButton";
-
-function todayKstISO(): string {
-  const now = new Date();
-  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().slice(0, 10);
-}
+import { AnswerField, Icon, SheetBand, Verdict, backLink, btnPrimary } from "@/components/omr";
 
 const STORAGE_KEY = "lck.daily";
 
@@ -34,10 +31,10 @@ function writeLocal(s: DailyState): void {
 
 export default function DailyChallenge() {
   const challenge = useMemo(() => getDailyChallenge(), []);
-  const day = todayKstISO();
+  const day = useMemo(() => kstDay(), []);
   const [answer, setAnswer] = useState("");
   const [done, setDone] = useState<DailyState | null>(null);
-  const [hint, setHint] = useState(false);
+  const [hint, setHint] = useState<string | null>(null);
   const startRef = useRef<number>(Date.now());
 
   useEffect(() => {
@@ -48,13 +45,18 @@ export default function DailyChallenge() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!answer.trim()) {
+      setHint("먼저 답란에 명령을 입력하세요.");
+      return;
+    }
     if (!matchesChallenge(challenge, answer)) {
-      setHint(true);
+      setHint(challenge.hint);
       return;
     }
     const ms = Date.now() - startRef.current;
     const state: DailyState = { day, timeMs: ms };
     writeLocal(state);
+    recordLearningDay();
     setDone(state);
     if (isSupabaseConfigured()) {
       const sb = getSupabase();
@@ -76,73 +78,68 @@ export default function DailyChallenge() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <header>
-        <Link href="/" className="text-xs text-zinc-500 hover:text-zinc-300">
-          ← 홈
+    <div className="flex flex-col gap-6">
+      <header className="flex flex-col gap-3">
+        <Link href="/" className={backLink}>
+          <Icon name="back" size={15} />홈
         </Link>
-        <div className="mt-2 flex items-center gap-2">
-          <h1 className="text-2xl font-bold tracking-tight">오늘의 챌린지</h1>
+        <SheetBand left="2교시 · 습관" right={`KST ${day}`} />
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-serif text-[2.2rem] font-extrabold tracking-[-0.02em] text-marker sm:text-[2.7rem]">
+            오늘의 챌린지
+          </h1>
           <StreakBadge />
         </div>
-        <p className="mt-1 text-sm text-zinc-400">
-          KST {day} · 매일 자정에 새 챌린지가 열립니다.
-        </p>
+        <p className="text-[0.95rem] text-text-2">KST {day} · 매일 자정에 새 챌린지가 열립니다.</p>
       </header>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
-        <p className="text-sm leading-relaxed text-zinc-100">{challenge.prompt}</p>
+      <section className="flex flex-col gap-5 border-[1.5px] border-ink bg-paper p-5 sm:p-7" aria-labelledby="daily-q">
+        <p className="font-mono text-[0.78rem] font-bold text-ink-strong">주관식 · 1문항</p>
+        <h2 id="daily-q" className="font-serif text-[1.35rem] font-extrabold leading-snug text-marker sm:text-[1.6rem]">
+          {challenge.prompt}
+        </h2>
         {done ? (
           <DoneScreen state={done} note={challenge.successNote} />
         ) : (
-          <>
-            {hint && (
-              <p className="rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-amber-200">
-                힌트: {challenge.hint}
-              </p>
-            )}
-            <form onSubmit={submit} className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-black/60 px-3 py-2 font-mono text-sm">
-                <span className="text-emerald-400">$</span>
-                <input
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  placeholder="명령 입력..."
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                  className="flex-1 bg-transparent text-zinc-100 outline-none placeholder:text-zinc-600"
-                />
-              </div>
-              <button className="self-end rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-zinc-950">
-                실행
-              </button>
-            </form>
-          </>
+          <form onSubmit={submit} className="flex flex-col gap-3">
+            <AnswerField
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder="명령 입력..."
+              aria-label="명령 입력"
+            />
+            {hint && <Verdict ok={false}>{hint}</Verdict>}
+            <button className={`${btnPrimary} self-end`}>실행</button>
+          </form>
         )}
       </section>
 
-      <p className="text-center text-[11px] text-zinc-600">
-        스트릭은 자정 KST 기준으로 갱신됩니다.
+      <p className="text-center text-[0.78rem] text-text-2">
+        스트릭은 자정 KST 기준으로 갱신됩니다. 레슨을 끝내거나 오늘의 챌린지를 풀면 하루가 채워집니다.
       </p>
     </div>
   );
 }
 
 function DoneScreen({ state, note }: { state: DailyState; note: string }) {
-  const streak = getStreak();
+  const { streak } = useProgress();
+  const seconds = (state.timeMs / 1000).toFixed(2);
   return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-5 text-center">
-      <span className="text-3xl">🔥</span>
-      <h2 className="text-lg font-bold text-emerald-100">오늘 완료!</h2>
-      <p className="font-mono text-2xl text-emerald-200">
-        {(state.timeMs / 1000).toFixed(2)}s
+    <div role="status" className="flex flex-col items-start gap-4 border-t-[1.5px] border-ink pt-5">
+      <span className="stamp-in inline-flex border-[2.5px] border-ink px-3 py-1 font-serif text-xl font-extrabold text-ink">
+        오늘 완료!
+      </span>
+      <p className="font-mono text-6xl font-bold tabular-nums tracking-tight text-marker sm:text-7xl">
+        {seconds}
+        <span className="ml-1 text-2xl text-ink">s</span>
       </p>
-      <p className="text-xs text-emerald-200/80">{note}</p>
-      <p className="text-xs text-zinc-300">
-        스트릭 <strong>{streak.current}</strong>일 · 내일 다시 오세요
+      <p className="text-[0.92rem] leading-7 text-text">{note}</p>
+      <p className="text-[0.92rem] text-text-2">
+        스트릭 <strong className="font-mono text-marker">{streak}</strong>일 · 내일 다시 오세요
       </p>
-      <ShareButton text={`codex-tutorial 오늘의 챌린지를 ${(state.timeMs / 1000).toFixed(2)}초에 완료! 스트릭 ${streak.current}일째.`} />
+      <ShareButton
+        text={`codex-tutorial 오늘의 챌린지를 ${seconds}초에 완료! 스트릭 ${streak}일째.`}
+      />
     </div>
   );
 }
