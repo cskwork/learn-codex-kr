@@ -3,7 +3,7 @@
 > OpenAI Codex CLI를 한국어로 인터랙티브하게 배우는 멀티플레이어 학습 사이트.
 > 모바일 친화, 회원가입 없이 5분에 시작. 목표는 **동시 접속자 100명 유지**.
 
-라이브: <https://cskwork.github.io/learn-codex-kr/>
+라이브: <https://learn-codex-kr.vercel.app> (Vercel, 루트 경로) · <https://cskwork.github.io/learn-codex-kr/> (GitHub Pages)
 
 ## 기능
 
@@ -16,13 +16,17 @@
 - **실시간 동접자 카운터** — `lck:global` presence 채널
 - **익명 device-id 세션** — 회원가입 없이 진행도 저장, 모든 데이터는 디바이스 단위
 
+## 디자인
+
+OMR 답안지 콘셉트. 제품 맥락은 `PRODUCT.md`, 디자인 시스템은 `DESIGN.md`, 이미지 출처는 `docs/asset-register.md`.
+
 ## 기술 스택
 
 | 영역 | 선택 |
 |---|---|
 | 프론트엔드 | Next.js 16 (App Router) + TypeScript + Tailwind v4 |
 | 빌드 | `next build` 정적 export (`output: "export"`) |
-| 배포 | GitHub Pages (`/learn-codex-kr` 서브패스) |
+| 배포 | GitHub Pages (`/learn-codex-kr` 서브패스) + Vercel (루트, `VERCEL` 빌드 환경에서 basePath 자동 해제) |
 | 인증/저장 | Supabase (anon JS client) + localStorage fallback |
 | 실시간 | Supabase Realtime (presence + broadcast) |
 | 분석 | Vercel Analytics 또는 GA (선택) |
@@ -43,6 +47,7 @@ cp .env.local.example .env.local   # 선택: Supabase 키 채우기
 pnpm dev        # http://localhost:3000
 pnpm build      # 정적 export 검증
 pnpm lint
+pnpm test       # 스트릭(KST)·레슨 순서 단위 테스트 (node --test)
 ```
 
 Node 22, pnpm 10 기준.
