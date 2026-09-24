@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import LessonSimulator from "@/components/LessonSimulator";
 import { allLessons, getLesson, getLessonSlugs } from "@/lib/lessons";
+import { lessonAfter } from "@/lib/streak";
 
 export const dynamicParams = false;
 
@@ -17,7 +18,7 @@ export async function generateMetadata({
   const lesson = getLesson(slug);
   if (!lesson) return {};
   return {
-    title: `${lesson.title} · codex-tutorial`,
+    title: lesson.title,
     description: lesson.subtitle,
   };
 }
@@ -30,7 +31,13 @@ export default async function LessonPage({
   const { slug } = await params;
   const lesson = getLesson(slug);
   if (!lesson) notFound();
-  // Ensure the imports are not dropped by tree-shaking when stats are needed downstream.
-  void allLessons;
-  return <LessonSimulator lesson={lesson} />;
+  const nextSlug = lessonAfter(allLessons, slug);
+  const next = nextSlug ? getLesson(nextSlug) : undefined;
+  return (
+    <LessonSimulator
+      key={lesson.slug}
+      lesson={lesson}
+      nextLesson={next ? { slug: next.slug, title: next.title } : null}
+    />
+  );
 }

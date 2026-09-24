@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { SITE_URL } from "@/lib/paths";
+import { Icon, btnSecondary } from "./omr";
 
 type Props = {
   text: string;
@@ -9,42 +11,33 @@ type Props = {
 };
 
 export default function ShareButton({ text, url, className }: Props) {
-  const [copied, setCopied] = useState(false);
-  const shareUrl =
-    url ??
-    (typeof window !== "undefined"
-      ? window.location.href
-      : "https://cskwork.github.io/learn-codex-kr/");
+  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
 
   async function onClick() {
+    const shareUrl = url ?? (typeof window !== "undefined" ? window.location.href : `${SITE_URL}/`);
     const payload = `${text}\n${shareUrl}`;
     if (typeof navigator !== "undefined" && "share" in navigator) {
       try {
         await navigator.share({ text, url: shareUrl, title: "codex-tutorial" });
         return;
-      } catch {
-        // user cancelled or unsupported, fall through to clipboard
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        // unsupported payload: fall through to clipboard
       }
     }
     try {
       await navigator.clipboard.writeText(payload);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      setState("copied");
     } catch {
-      // ignore
+      setState("failed");
     }
+    window.setTimeout(() => setState("idle"), 2500);
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={
-        className ??
-        "rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2 text-sm font-medium text-emerald-100 transition hover:bg-emerald-300/20"
-      }
-    >
-      {copied ? "복사됨!" : "공유하기"}
+    <button type="button" onClick={onClick} className={className ?? btnSecondary} aria-live="polite">
+      <Icon name={state === "copied" ? "check" : "share"} size={16} />
+      {state === "copied" ? "복사됨!" : state === "failed" ? "복사 실패 · 주소를 직접 복사하세요" : "공유하기"}
     </button>
   );
 }
