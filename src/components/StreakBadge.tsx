@@ -1,21 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getStreak, type StreakState } from "@/lib/storage";
+import { useProgress } from "@/lib/useProgress";
+import { Icon } from "./omr";
 
-export default function StreakBadge() {
-  const [streak, setStreak] = useState<StreakState | null>(null);
-  useEffect(() => {
-    setStreak(getStreak());
-  }, []);
-  if (!streak || streak.current === 0) return null;
+/** Consecutive learning days (KST). Hidden until there is a live streak. */
+export default function StreakBadge({ compact = false }: { compact?: boolean }) {
+  const { ready, streak, best } = useProgress();
+  if (!ready || streak === 0) return null;
   return (
-    <div className="flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs text-amber-300">
-      <span aria-hidden>🔥</span>
-      <span className="tabular-nums">{streak.current}일 연속</span>
-      {streak.best > streak.current && (
-        <span className="text-[10px] text-amber-400/70">최고 {streak.best}일</span>
+    <span
+      className={`inline-flex items-center gap-1.5 border-[1.5px] border-marker bg-paper font-bold text-marker ${
+        compact ? "px-2 py-0.5 text-[0.72rem]" : "px-2.5 py-1 text-[0.8rem]"
+      }`}
+      aria-label={`연속 학습 ${streak}일${best > streak ? `, 최고 ${best}일` : ""}`}
+    >
+      <Icon name="flame" size={compact ? 13 : 15} className="text-ink" />
+      <span className="font-mono tabular-nums">{streak}일 연속</span>
+      {!compact && best > streak && (
+        <span className="font-mono text-[0.7rem] font-normal text-text-2">최고 {best}일</span>
       )}
-    </div>
+    </span>
   );
 }
