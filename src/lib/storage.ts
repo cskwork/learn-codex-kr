@@ -2,6 +2,12 @@
 
 import { getDeviceId, getDisplayName } from "./device-id";
 import { getSupabase, isSupabaseConfigured } from "./supabase";
+import { EMPTY_STREAK, advanceStreak, kstDay, liveStreak, type StreakState } from "./streak";
+
+export type { StreakState };
+
+/** Fired on window whenever local progress or streak changes, so badges can refresh. */
+export const PROGRESS_EVENT = "lck:progress";
 
 const PROGRESS_KEY = "lck.progress";
 const STREAK_KEY = "lck.streak";
@@ -13,22 +19,12 @@ export type LessonProgress = {
   durationSec: number;
 };
 
-export type StreakState = {
-  current: number;
-  lastDay: string;
-  best: number;
-};
-
 export type RaceScore = {
   matchId: string;
   lessonSlug: string;
   timeMs: number;
   finishedAt: string;
 };
-
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export function getProgress(): LessonProgress[] {
   if (typeof window === "undefined") return [];
@@ -44,7 +40,8 @@ export function markLessonComplete(slug: string, durationSec: number): void {
   const all = getProgress().filter((p) => p.slug !== slug);
   all.push({ slug, completedAt: new Date().toISOString(), durationSec });
   window.localStorage.setItem(PROGRESS_KEY, JSON.stringify(all));
-  bumpStreak();
+  recordLearningDay();
+  window.dispatchEvent(new Event(PROGRESS_EVENT));
   // Best-effort cloud sync — never block UI on this.
   syncLessonToCloud(slug, durationSec).catch(() => {});
 }
@@ -66,32 +63,30 @@ async function syncLessonToCloud(slug: string, durationSec: number): Promise<voi
 }
 
 export function getStreak(): StreakState {
-  if (typeof window === "undefined") {
-    return { current: 0, lastDay: "", best: 0 };
-  }
+  if (typeof window === "undefined") return EMPTY_STREAK;
   try {
-    return JSON.parse(
-      window.localStorage.getItem(STREAK_KEY) ??
-        '{"current":0,"lastDay":"","best":0}'
-    );
+    const raw = window.localStorage.getItem(STREAK_KEY);
+    return raw ? { ...EMPTY_STREAK, ...JSON.parse(raw) } : EMPTY_STREAK;
   } catch {
-    return { current: 0, lastDay: "", best: 0 };
+    return EMPTY_STREAK;
   }
 }
 
-function bumpStreak(): void {
-  const today = todayISO();
-  const prev = getStreak();
-  if (prev.lastDay === today) return;
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  const isContinuation = prev.lastDay === yesterday;
-  const current = isContinuation ? prev.current + 1 : 1;
-  const next: StreakState = {
-    current,
-    lastDay: today,
-    best: Math.max(prev.best, current),
-  };
+/** Current streak as of today (KST); 0 once a day has been skipped. */
+export function getLiveStreak(): { current: number; best: number } {
+  const s = getStreak();
+  return { current: liveStreak(s, kstDay()), best: s.best };
+}
+
+/**
+ * Count today (KST) as a learning day. Called for finished lessons and for the
+ * daily challenge, so "스트릭" means what the daily page says it means.
+ */
+export function recordLearningDay(): void {
+  if (typeof window === "undefined") return;
+  const next = advanceStreak(getStreak(), kstDay());
   window.localStorage.setItem(STREAK_KEY, JSON.stringify(next));
+  window.dispatchEvent(new Event(PROGRESS_EVENT));
 }
 
 export function getRaceScores(): RaceScore[] {

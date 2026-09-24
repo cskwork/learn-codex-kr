@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-24T08:42:12.398549Z",
+  "title": "Design System: codex-tutorial",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "OMR Ink",
+        "canonical": "#c7255b",
+        "tonalRamp": [
+          "#3d0b1c",
+          "#661230",
+          "#8f1a44",
+          "#c7255b",
+          "#dc5f86",
+          "#ec9bb6",
+          "#f6cdda",
+          "#fde9ef"
+        ]
+      },
+      "marker": {
+        "role": "secondary",
+        "displayName": "Marker Black",
+        "canonical": "#141214",
+        "tonalRamp": [
+          "#141214",
+          "#2a262a",
+          "#403a3f",
+          "#5b4b52",
+          "#7a6870",
+          "#a3959b",
+          "#cfc6ca",
+          "#efebed"
+        ]
+      },
+      "pen": {
+        "role": "tertiary",
+        "displayName": "Ballpoint Blue",
+        "canonical": "#2447b3",
+        "tonalRamp": [
+          "#0e1c47",
+          "#172e73",
+          "#1f3d9a",
+          "#2447b3",
+          "#5a76cb",
+          "#93a6de",
+          "#c6d1f0",
+          "#e9eefc"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Answer Paper",
+        "canonical": "#fdfdfb"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home headline only."
+      },
+      "code": {
+        "displayName": "Coding",
+        "purpose": "Commands, times, counts."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "0 18px 40px -24px rgba(163,22,63,0.45)",
+        "purpose": "Home answer card lift."
+      },
+      {
+        "name": "button-hover",
+        "value": "0 6px 14px -6px rgba(163,22,63,0.55)",
+        "purpose": "Primary button hover."
+      },
+      {
+        "name": "field-focus",
+        "value": "0 4px 12px -6px rgba(20,18,20,0.35)",
+        "purpose": "Answer field focus."
+      }
+    ],
+    "motion": [
+      {
+        "name": "marker-fill",
+        "value": "clip-path 420ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Oval fill when marked."
+      },
+      {
+        "name": "stamp-in",
+        "value": "380ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "완료 stamp on completion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action; black marker block.",
+      "html": "<button class=\"ds-btn-primary\">5분 만에 첫 작업 성공하기</button>",
+      "css": ".ds-btn-primary{background:#141214;color:#fdfdfb;font-weight:700;font-size:14px;min-height:44px;padding:10px 20px;border:0;border-radius:0;transition:transform .2s,background .2s,box-shadow .2s}.ds-btn-primary:hover{background:#a3163f;transform:translateY(-1px);box-shadow:0 6px 14px -6px rgba(163,22,63,.55)}.ds-btn-primary:focus-visible{outline:2px solid #2447b3;outline-offset:3px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined ink action.",
+      "html": "<button class=\"ds-btn-secondary\">무료 데모 문제 보기</button>",
+      "css": ".ds-btn-secondary{background:#fdfdfb;color:#a3163f;border:1.5px solid #c7255b;font-weight:700;font-size:14px;min-height:44px;padding:10px 20px;border-radius:0}.ds-btn-secondary:hover{background:#fde9ef}.ds-btn-secondary:focus-visible{outline:2px solid #2447b3;outline-offset:3px}"
+    },
+    {
+      "name": "Answer Field",
+      "kind": "input",
+      "refersTo": "answer-field",
+      "description": "주관식 답란 for commands.",
+      "html": "<label class=\"ds-answer\"><span class=\"ds-answer-label\">답란</span><span class=\"ds-answer-body\">$ <input placeholder=\"codex ...\"></span></label>",
+      "css": ".ds-answer{display:flex;border:1.5px solid #c7255b;background:#fdfdfb}.ds-answer:focus-within{border-color:#141214;box-shadow:0 4px 12px -6px rgba(20,18,20,.35)}.ds-answer-label{width:56px;display:grid;place-items:center;background:#fde9ef;color:#a3163f;font:700 12px 'Nanum Gothic Coding',monospace;border-right:1.5px solid #c7255b}.ds-answer-body{flex:1;display:flex;align-items:center;gap:8px;padding:0 12px;color:#c7255b;font-family:'Nanum Gothic Coding',monospace}.ds-answer input{border:0;outline:0;background:transparent;min-height:48px;flex:1;font:16px 'Nanum Gothic Coding',monospace;color:#141214}"
+    },
+    {
+      "name": "Nav Tabs",
+      "kind": "nav",
+      "refersTo": "nav",
+      "description": "Bordered tab strip; active is solid black.",
+      "html": "<nav class=\"ds-nav\"><a aria-current=\"page\">레슨</a><a>오늘</a><a>코업</a></nav>",
+      "css": ".ds-nav{display:flex}.ds-nav a{border-left:1.5px solid #ec9bb6;padding:12px 16px;color:#a3163f;font-weight:700;font-size:14px;text-decoration:none}.ds-nav a:last-child{border-right:1.5px solid #ec9bb6}.ds-nav a:hover{background:#fde9ef}.ds-nav a[aria-current=page]{background:#141214;color:#fdfdfb}"
+    },
+    {
+      "name": "Oval",
+      "kind": "custom",
+      "refersTo": "oval",
+      "description": "Answer oval; fills with a marker wipe.",
+      "html": "<span class=\"ds-oval\">1</span><span class=\"ds-oval is-filled\">2</span>",
+      "css": ".ds-oval{display:inline-grid;place-items:center;width:24px;height:30px;border:1.5px solid #c7255b;border-radius:999px;color:#c7255b;font:700 12px 'Nanum Gothic Coding',monospace;margin-right:6px}.ds-oval.is-filled{background:#141214;color:#fdfdfb}"
+    },
+    {
+      "name": "Sheet Band",
+      "kind": "custom",
+      "refersTo": "sheet-band",
+      "description": "Header strip of every sheet.",
+      "html": "<div class=\"ds-band\"><span>문항 01</span><span>예상 5분</span></div>",
+      "css": ".ds-band{display:flex;justify-content:space-between;background:#fde9ef;border-top:1.5px solid #c7255b;border-bottom:1.5px solid #c7255b;padding:6px 12px;color:#a3163f;font-weight:700;font-size:13px}"
+    },
+    {
+      "name": "Verdict",
+      "kind": "custom",
+      "refersTo": "verdict-hint",
+      "description": "판독 result; black for correct, blue for hint.",
+      "html": "<div class=\"ds-verdict\"><b>힌트</b> 그냥 codex 만 쳐도 시작됩니다.</div>",
+      "css": ".ds-verdict{display:flex;gap:12px;align-items:flex-start;border:1.5px solid #2447b3;background:#e9eefc;color:#2447b3;padding:12px 16px;font-size:14px}.ds-verdict b{border:1px solid #2447b3;padding:2px 8px;font:700 11px 'Nanum Gothic Coding',monospace}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The machine-graded answer card",
+    "overview": "Every surface is an OMR answer sheet: printed pink-red structure, black marker marks, a timing track down the edge. Lessons are 문항, modes are 교시, the leaderboard is a 성적표.",
+    "keyCharacteristics": [
+      "Pink-red 1.5px printed rules carry structure",
+      "Black is reserved for marks and actions",
+      "Ovals fill with a marker wipe",
+      "Myeongjo display, Nanum Gothic Coding for commands and numbers",
+      "Ballpoint blue only for hints and notices"
+    ],
+    "rules": [
+      {
+        "name": "The Two Inks Rule",
+        "body": "Structure is printed in pink; action is marked in black.",
+        "section": "colors"
+      },
+      {
+        "name": "The Honest Card Rule",
+        "body": "No invented numbers print on the card.",
+        "section": "colors"
+      },
+      {
+        "name": "The Typed-Is-Coded Rule",
+        "body": "Anything typed or measured is set in Nanum Gothic Coding.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do print structure in OMR ink at 1.5px",
+      "Do show progress as ovals or timing marks",
+      "Do keep hints in ballpoint blue"
+    ],
+    "donts": [
+      "Don't reintroduce the dark neon terminal or glow",
+      "Don't round containers or buttons",
+      "Don't show estimated learner counts",
+      "Don't add eyebrows above headings"
+    ]
+  }
+}
