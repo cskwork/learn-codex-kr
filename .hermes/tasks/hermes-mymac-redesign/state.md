@@ -2,7 +2,7 @@
 
 - Started: 2026-05-23 17:15:27 KST
 - Repo: https://github.com/cskwork/learn-codex-kr
-- Local path: ~/learn-codex-kr
+- Local path: /Users/<user>/learn-codex-kr
 - Branch: redesign/codex-tutorial-landing
 - Product/site display name target: codex-tutorial / codex-tutorial
 - Deployment basePath: 현재 repo가 learn-codex-kr이므로 안전상 아직 /learn-codex-kr 유지. repo rename/Pages path 변경은 사용자 승인 필요.
