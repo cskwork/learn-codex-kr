@@ -7,15 +7,21 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { COOP_CHALLENGES, matchesChallenge, type Challenge } from "@/lib/challenges";
 import { getDeviceId, getDisplayName, setDisplayName } from "@/lib/device-id";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import {
+  CHAT_MAX_CHARS,
+  acceptSolved,
+  appendChat,
+  clipChatText,
+  makeRoomId,
+  membersFromPresence,
+  normalizeRoomCode,
+  type Member,
+  type SolvedEvent,
+} from "@/lib/multiplayer";
 import { AnswerField, Icon, SheetBand, Verdict, backLink, btnPrimary, btnSecondary } from "@/components/omr";
 
-type Member = { id: string; name: string };
 type ChatLine = { from: string; name: string; text: string; at: number };
-type Solved = { by: string; name: string; at: number; challengeId: string };
-
-function makeRoomId(): string {
-  return Math.random().toString(36).slice(2, 7).toUpperCase();
-}
+type Solved = SolvedEvent;
 
 export default function CoopRoom() {
   const router = useRouter();
@@ -74,7 +80,7 @@ function Lobby({ onCreate }: { onCreate: (id: string) => void }) {
           <input
             id="room-code"
             value={joinId}
-            onChange={(e) => setJoinId(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
+            onChange={(e) => setJoinId(normalizeRoomCode(e.target.value))}
             placeholder="방 코드 (예: A4F2X)"
             autoCapitalize="characters"
             autoComplete="off"
@@ -226,6 +232,11 @@ function Room({ roomId, initialName }: { roomId: string; initialName: string }) 
   const me = useMemo(() => getDeviceId(), []);
 
   const challenge: Challenge = COOP_CHALLENGES[challengeIdx];
+  // The channel handlers below are registered once per room; read the current challenge through a ref.
+  const challengeIdRef = useRef(challenge.id);
+  useEffect(() => {
+    challengeIdRef.current = challenge.id;
+  }, [challenge.id]);
 
   useEffect(() => {
     const sb = getSupabase();
@@ -235,23 +246,16 @@ function Room({ roomId, initialName }: { roomId: string; initialName: string }) 
     });
 
     ch.on("presence", { event: "sync" }, () => {
-      const state = ch.presenceState() as Record<
-        string,
-        { name: string; joined_at: number }[]
-      >;
-      const list: Member[] = Object.entries(state).map(([id, metas]) => ({
-        id,
-        name: metas[0]?.name ?? "익명",
-      }));
-      setMembers(list);
+      setMembers(membersFromPresence(ch.presenceState() as Record<string, { name?: string }[]>));
     });
 
     ch.on("broadcast", { event: "chat" }, ({ payload }) => {
-      setChat((c) => [...c, payload as ChatLine].slice(-50));
+      setChat((c) => appendChat(c, payload as ChatLine));
     });
 
     ch.on("broadcast", { event: "solved" }, ({ payload }) => {
-      setSolved(payload as Solved);
+      const event = payload as Solved;
+      if (acceptSolved(challengeIdRef.current, event)) setSolved(event);
     });
 
     ch.on("broadcast", { event: "next" }, ({ payload }) => {
@@ -277,15 +281,16 @@ function Room({ roomId, initialName }: { roomId: string; initialName: string }) 
   const send = useCallback(
     (text: string) => {
       const ch = channelRef.current;
-      if (!ch || !text.trim()) return;
+      const clipped = clipChatText(text);
+      if (!ch || !clipped) return;
       const line: ChatLine = {
         from: me,
         name: name || "익명",
-        text: text.trim().slice(0, 200),
+        text: clipped,
         at: Date.now(),
       };
       ch.send({ type: "broadcast", event: "chat", payload: line });
-      setChat((c) => [...c, line].slice(-50));
+      setChat((c) => appendChat(c, line));
     },
     [me, name]
   );
@@ -436,7 +441,7 @@ function Room({ roomId, initialName }: { roomId: string; initialName: string }) 
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
             placeholder="메시지..."
-            maxLength={200}
+            maxLength={CHAT_MAX_CHARS}
             className="min-h-11 min-w-0 flex-1 bg-paper px-4 text-marker outline-none"
           />
           <button className="border-l-[1.5px] border-ink bg-marker px-4 text-sm font-bold text-paper hover:bg-ink-strong">전송</button>
