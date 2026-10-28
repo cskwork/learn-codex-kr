@@ -8,26 +8,12 @@ import { RACE_CHALLENGES, matchesChallenge } from "@/lib/challenges";
 import { getDeviceId, getDisplayName } from "@/lib/device-id";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { recordRaceScore } from "@/lib/storage";
+import { matchSlotId, pickForMatch, raceRank, racersFromPresence, type Racer } from "@/lib/multiplayer";
 import ShareButton from "@/components/ShareButton";
 import { AnswerField, Icon, SheetBand, Verdict, backLink, btnPrimary, btnSecondary } from "@/components/omr";
 
-type Racer = { id: string; name: string; finishedMs?: number };
-
-function todaysMatchSlot(): string {
-  const d = new Date();
-  const slot = Math.floor(d.getTime() / (60 * 1000));
-  return `r-${slot}`;
-}
-
 function pickChallengeForMatch(matchId: string) {
-  const idx = Math.abs(hashStr(matchId)) % RACE_CHALLENGES.length;
-  return RACE_CHALLENGES[idx];
-}
-
-function hashStr(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return h;
+  return pickForMatch(matchId, RACE_CHALLENGES);
 }
 
 export default function RaceMode() {
@@ -35,7 +21,7 @@ export default function RaceMode() {
   const router = useRouter();
   const matchId = search?.get("match");
 
-  if (!matchId) return <Lobby onJoin={() => router.push(`/race?match=${todaysMatchSlot()}`)} />;
+  if (!matchId) return <Lobby onJoin={() => router.push(`/race?match=${matchSlotId()}`)} />;
   if (!isSupabaseConfigured())
     return <SoloRace matchId={matchId} />;
 
@@ -176,21 +162,7 @@ function RealRace({ matchId }: { matchId: string }) {
       config: { presence: { key: me } },
     });
     ch.on("presence", { event: "sync" }, () => {
-      const state = ch.presenceState() as Record<
-        string,
-        { name: string; finishedMs?: number }[]
-      >;
-      const next: Racer[] = Object.entries(state).map(([id, metas]) => ({
-        id,
-        name: metas[0]?.name ?? "익명",
-        finishedMs: metas[0]?.finishedMs,
-      }));
-      next.sort((a, b) => {
-        const af = a.finishedMs ?? Infinity;
-        const bf = b.finishedMs ?? Infinity;
-        return af - bf;
-      });
-      setRacers(next);
+      setRacers(racersFromPresence(ch.presenceState() as Record<string, { name?: string; finishedMs?: number }[]>));
     });
     ch.subscribe(async (status) => {
       if (status === "SUBSCRIBED") {
@@ -227,10 +199,7 @@ function RealRace({ matchId }: { matchId: string }) {
     [challenge, answer, done, matchId]
   );
 
-  const rank =
-    done === null
-      ? null
-      : racers.filter((r) => (r.finishedMs ?? Infinity) <= done).length;
+  const rank = done === null ? null : raceRank(racers, done);
 
   return (
     <div className="flex flex-col gap-6">
