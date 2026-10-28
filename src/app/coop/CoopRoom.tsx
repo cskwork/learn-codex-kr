@@ -9,6 +9,7 @@ import { getDeviceId, getDisplayName, setDisplayName } from "@/lib/device-id";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import {
   CHAT_MAX_CHARS,
+  acceptSolved,
   appendChat,
   clipChatText,
   makeRoomId,
@@ -231,6 +232,11 @@ function Room({ roomId, initialName }: { roomId: string; initialName: string }) 
   const me = useMemo(() => getDeviceId(), []);
 
   const challenge: Challenge = COOP_CHALLENGES[challengeIdx];
+  // The channel handlers below are registered once per room; read the current challenge through a ref.
+  const challengeIdRef = useRef(challenge.id);
+  useEffect(() => {
+    challengeIdRef.current = challenge.id;
+  }, [challenge.id]);
 
   useEffect(() => {
     const sb = getSupabase();
@@ -248,7 +254,8 @@ function Room({ roomId, initialName }: { roomId: string; initialName: string }) 
     });
 
     ch.on("broadcast", { event: "solved" }, ({ payload }) => {
-      setSolved(payload as Solved);
+      const event = payload as Solved;
+      if (acceptSolved(challengeIdRef.current, event)) setSolved(event);
     });
 
     ch.on("broadcast", { event: "next" }, ({ payload }) => {

@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   CHAT_HISTORY_LIMIT,
+  acceptSolved,
   appendChat,
   clipChatText,
   hashStr,
@@ -87,4 +88,10 @@ test("chat text is trimmed and clipped; history keeps the newest lines", () => {
   assert.equal(lines.length, CHAT_HISTORY_LIMIT);
   assert.equal(lines[0], 5);
   assert.equal(lines.at(-1), CHAT_HISTORY_LIMIT + 4);
+});
+
+test("acceptSolved ignores a peer's solve for a different challenge (late joiner)", () => {
+  const solved = { by: "d_peer", name: "수달-x9", at: 0, challengeId: "C-plan-1" };
+  assert.equal(acceptSolved("C-plan-1", solved), true);
+  assert.equal(acceptSolved("C-goal-1", solved), false);
 });
