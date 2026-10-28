@@ -92,6 +92,6 @@ learn-codex-kr는 Next.js 16 App Router를 `output: "export"`로 빌드한 **정
 
 ## 빌드·배포
 
-- `.github/workflows/ci.yml`: PR과 `main` push마다 `pnpm install --frozen-lockfile` → `pnpm lint` → `tsc --noEmit` → `pnpm test` → `pnpm build`
+- `.github/workflows/ci.yml`: PR과 `main` push마다 `pnpm install --frozen-lockfile` → `pnpm lint` → `pnpm test` → `pnpm build` → `tsc --noEmit`
 - `.github/workflows/deploy.yml`: `main` push 시 `out/`을 GitHub Pages로 배포. 현재 Supabase env를 넘기지 않음
 - Vercel: git 연동으로 루트 경로 배포 (설정은 저장소 밖)
