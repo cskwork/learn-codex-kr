@@ -78,3 +78,12 @@ export function appendChat<T>(lines: readonly T[], line: T): T[] {
   return [...lines, line].slice(-CHAT_HISTORY_LIMIT);
 }
 
+
+/**
+ * Whether a peer's `solved` broadcast applies to the challenge this client is
+ * showing. Broadcasts are not replayed, so a member who joined late can still be
+ * on another challenge; a stale `solved` must not mark that one as answered.
+ */
+export function acceptSolved(currentChallengeId: string, event: SolvedEvent): boolean {
+  return event.challengeId === currentChallengeId;
+}
